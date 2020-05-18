@@ -25,8 +25,9 @@ import org.gradle.api.artifacts.ModuleVersionSelector;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.internal.artifacts.DependencyResolutionServices;
-import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency;
 import org.gradle.api.internal.artifacts.JavaEcosystemSupport;
+import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency;
+import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler;
 import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.strategy.VersionSelectorScheme;
 import org.gradle.api.internal.artifacts.repositories.ArtifactRepositoryInternal;
 import org.gradle.plugin.management.internal.InvalidPluginRequestException;
@@ -47,9 +48,8 @@ public class ArtifactRepositoriesPluginResolver implements PluginResolver {
 
     public static ArtifactRepositoriesPluginResolver createWithDefaults(DependencyResolutionServices dependencyResolutionServices, VersionSelectorScheme versionSelectorScheme) {
         RepositoryHandler repositories = dependencyResolutionServices.getResolveRepositoryHandler();
-        if (repositories.isEmpty()) {
-            repositories.gradlePluginPortal();
-        }
+        repositories.removeIf(r -> r.getName().equals(DefaultRepositoryHandler.GRADLE_PLUGIN_PORTAL_REPO_NAME));
+        repositories.gradlePluginPortal();
         return new ArtifactRepositoriesPluginResolver(dependencyResolutionServices, versionSelectorScheme);
     }
 

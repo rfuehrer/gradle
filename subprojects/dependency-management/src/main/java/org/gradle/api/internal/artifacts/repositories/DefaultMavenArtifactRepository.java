@@ -149,6 +149,8 @@ public class DefaultMavenArtifactRepository extends AbstractAuthenticationSuppor
         this.checksumService = checksumService;
         this.metadataSources.setDefaults();
         this.instantiatorFactory = instantiatorFactory;
+//        new IllegalStateException("Bug: created Maven : " + this).printStackTrace();
+        System.out.println("Bug: created Maven : " + this);
     }
 
     @Override
@@ -163,6 +165,7 @@ public class DefaultMavenArtifactRepository extends AbstractAuthenticationSuppor
 
     @Override
     public void setUrl(URI url) {
+        System.out.println(this + " : " + url);
         invalidateDescriptor();
         urlArtifactRepository.setUrl(url);
     }
@@ -349,7 +352,9 @@ public class DefaultMavenArtifactRepository extends AbstractAuthenticationSuppor
 
     @Override
     protected RepositoryContentDescriptorInternal createRepositoryDescriptor() {
-        return new DefaultMavenRepositoryContentDescriptor(this::getDisplayName);
+        return new DefaultMavenRepositoryContentDescriptor(() -> getDisplayName() + "(" +
+            this +
+            ")");
     }
 
     private static class DefaultDescriber implements Transformer<String, MavenArtifactRepository> {

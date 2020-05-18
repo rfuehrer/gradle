@@ -16,6 +16,7 @@
 
 package org.gradle.api.internal.artifacts.repositories;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.gradle.api.Action;
 import org.gradle.api.ActionConfiguration;
@@ -45,7 +46,6 @@ import org.gradle.internal.service.DefaultServiceRegistry;
 
 import javax.annotation.Nullable;
 import java.net.URI;
-import java.util.function.Supplier;
 
 public abstract class AbstractArtifactRepository implements ArtifactRepositoryInternal, MetadataSupplierAware {
     private String name;
@@ -55,7 +55,7 @@ public abstract class AbstractArtifactRepository implements ArtifactRepositoryIn
     private Action<? super ActionConfiguration> componentMetadataSupplierRuleConfiguration;
     private Action<? super ActionConfiguration> componentMetadataListerRuleConfiguration;
     private final ObjectFactory objectFactory;
-    private final Supplier<RepositoryContentDescriptorInternal> repositoryContentDescriptor = Suppliers.memoize(this::createRepositoryDescriptor)::get;
+    private final Supplier<RepositoryContentDescriptorInternal> repositoryContentDescriptor = Suppliers.memoize(this::createRepositoryDescriptor);
 
     protected AbstractArtifactRepository(ObjectFactory objectFactory) {
         this.objectFactory = objectFactory;
@@ -110,7 +110,9 @@ public abstract class AbstractArtifactRepository implements ArtifactRepositoryIn
     }
 
     protected RepositoryContentDescriptorInternal createRepositoryDescriptor() {
-        return new DefaultRepositoryContentDescriptor(this::getDisplayName);
+        return new DefaultRepositoryContentDescriptor(() -> getDisplayName() + "(" +
+            this +
+            ")");
     }
 
     @Nullable

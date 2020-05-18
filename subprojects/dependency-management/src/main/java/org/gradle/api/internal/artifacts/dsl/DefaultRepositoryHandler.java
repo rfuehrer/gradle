@@ -245,7 +245,12 @@ public class DefaultRepositoryHandler extends DefaultArtifactRepositoryContainer
                 if (targetRepositories.contains(repo)) {
                     repo.content(filter);
                 } else {
-                    repo.content(forExclusivity);
+                    try {
+                        System.out.println("Bug: applying Exclusivity to " + repo);
+                        repo.content(forExclusivity);
+                    } catch (RuntimeException e) {
+                        throw new IllegalStateException("Failed to apply filter to " + repo.getName() + " while configuring one of these repositories: " + targetRepositories.stream().map(ArtifactRepository::getName).collect(Collectors.joining(",")), e);
+                    }
                 }
             });
         }

@@ -191,6 +191,82 @@ class DeployedPortalIntegrationSpec extends AbstractPluginIntegrationTest {
         output.contains("Hello World!")
     }
 
+    def "can resolve plugin from portal with repository filters and settings plugins"() {
+        given:
+        mavenRepo.module('com.android.tools', 'r8', '1.5.70').publish()
+
+        when:
+        buildKotlinFile << """
+            buildscript {
+              repositories {
+                exclusiveContent {
+                  forRepository {
+                    // For R8/D8 releases
+                    maven("https://storage.googleapis.com/r8-releases/raw")
+                  }
+                  filter {
+                    includeModule("com.android.tools", "r8")
+                  }
+                }
+              }
+            }
+
+            plugins {
+              id("$HELLO_WORLD_PLUGIN_ID") version "$HELLO_WORLD_PLUGIN_VERSION"
+            }
+        """
+        settingsKotlinFile << """
+            plugins {
+              id("com.gradle.enterprise") version "3.0"
+            }
+        """
+
+        then:
+        succeeds("helloWorld")
+
+        and:
+        output.contains("Hello World!")
+    }
+
+    def "can resolve plugin from portal with repository filters and settings plugins (groovy dsl)"() {
+        given:
+        mavenRepo.module('com.android.tools', 'r8', '1.5.70').publish()
+
+        when:
+        buildFile << """
+            buildscript {
+              repositories {
+                exclusiveContent {
+                  forRepository {
+                    // For R8/D8 releases
+                    maven {
+                        url = "${mavenRepo.uri}"
+                    }
+                  }
+                  filter {
+                    includeModule("com.android.tools", "r8")
+                  }
+                }
+              }
+            }
+
+            plugins {
+              id("$HELLO_WORLD_PLUGIN_ID") version "$HELLO_WORLD_PLUGIN_VERSION"
+            }
+        """
+        settingsFile << """
+            plugins {
+              id("com.gradle.enterprise") version "3.0"
+            }
+        """
+
+        then:
+        succeeds("helloWorld")
+
+        and:
+        output.contains("Hello World!")
+    }
+
     def "resolution fails from portal with repository filters present"() {
         given:
         mavenRepo.module('com.android.tools', 'r8', '1.5.70').publish()

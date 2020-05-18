@@ -102,6 +102,7 @@ public class PluginDependencyResolutionServices implements DependencyResolutionS
             @Override
             public List<ArtifactRepository> getPluginRepositories() {
                 RepositoryHandler repositories = getResolveRepositoryHandler();
+                System.out.println("repository handler: " + System.identityHashCode(repositories));
                 List<ArtifactRepository> list = new ArrayList<ArtifactRepository>(repositories.size());
                 for (ArtifactRepository repository : repositories) {
                     list.add(new PluginArtifactRepository(repository));
@@ -118,6 +119,8 @@ public class PluginDependencyResolutionServices implements DependencyResolutionS
         private PluginArtifactRepository(ArtifactRepository delegate) {
             this.delegate = (ArtifactRepositoryInternal) delegate;
             this.resolutionAwareDelegate = (ResolutionAwareRepository) delegate;
+//            new IllegalStateException("Bug: created PluginArtifactRepository delegating to " + delegate.getName() + " - " + delegate).printStackTrace();
+            System.out.println("Bug: created PluginArtifactRepository delegating to " + delegate.getName() + " - " + delegate);
         }
 
         @Override

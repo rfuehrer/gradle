@@ -150,7 +150,13 @@ public class ResolveIvyFactory {
     private ModuleComponentRepository filterRepository(ResolutionAwareRepository repository, ModuleComponentRepository moduleComponentRepository, String consumerName, AttributeContainer consumerAttributes) {
         Action<? super ArtifactResolutionDetails> filter = null;
         if (repository instanceof AbstractArtifactRepository) {
-            filter = ((AbstractArtifactRepository) repository).getContentFilter();
+            final AbstractArtifactRepository filterAwareRepository = (AbstractArtifactRepository) repository;
+            filter = details -> {
+                final Action<? super ArtifactResolutionDetails> contentFilter = filterAwareRepository.getContentFilter();
+                if (contentFilter != null) {
+                    contentFilter.execute(details);
+                }
+            };
         }
         moduleComponentRepository = FilteredModuleComponentRepository.of(moduleComponentRepository, filter, consumerName, consumerAttributes);
         return moduleComponentRepository;

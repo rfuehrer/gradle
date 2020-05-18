@@ -16,6 +16,8 @@
 package org.gradle.api.internal.artifacts.repositories;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -31,7 +33,6 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 class DefaultRepositoryContentDescriptor implements RepositoryContentDescriptorInternal {
@@ -41,38 +42,53 @@ class DefaultRepositoryContentDescriptor implements RepositoryContentDescriptorI
     private Set<ContentSpec> excludeSpecs;
     private Map<Attribute<Object>, Set<Object>> requiredAttributes;
     private boolean locked;
+    private final Supplier<Action<? super ArtifactResolutionDetails>> actionSupplier;
+    private final java.util.function.Supplier<String> repositoryNameSupplier;
 
-    private Action<? super ArtifactResolutionDetails> cachedAction;
-    private final Supplier<String> repositoryNameSupplier;
 
-    public DefaultRepositoryContentDescriptor(Supplier<String> repositoryNameSupplier) {
+    public DefaultRepositoryContentDescriptor(java.util.function.Supplier<String> repositoryNameSupplier) {
         this.repositoryNameSupplier = repositoryNameSupplier;
+        this.actionSupplier = Suppliers.memoize(createContentFilterSupplier(""));
+        //new IllegalStateException("Bug: created " + repositoryName + " - " + this.toString()).printStackTrace();
+    }
+
+    private Supplier<Action<? super ArtifactResolutionDetails>> createContentFilterSupplier(String repositoryName) {
+        return () -> {
+            //new IllegalStateException("Bug: Locking '" + repositoryName + " - " + this.toString()).printStackTrace();
+            locked = true;
+            if (includedConfigurations == null &&
+                excludedConfigurations == null &&
+                includeSpecs == null &&
+                excludeSpecs == null &&
+                requiredAttributes == null) {
+                // no filtering in place
+                return null;
+            }
+            return new RepositoryFilterAction(createSpecMatchers(includeSpecs), createSpecMatchers(excludeSpecs));
+        };
     }
 
     private void assertMutable() {
         if (locked) {
             throw new IllegalStateException("Cannot mutate content repository descriptor '" +
-                repositoryNameSupplier.get() +
+                repositoryNameSupplier.get() + " - " + this.toString() +
                 "' after repository has been used");
         }
     }
 
     @Override
     public Action<? super ArtifactResolutionDetails> toContentFilter() {
-        if (cachedAction != null) {
-            return cachedAction;
-        }
-        locked = true;
-        if (includedConfigurations == null &&
-                excludedConfigurations == null &&
-                includeSpecs == null &&
-                excludeSpecs == null &&
-                requiredAttributes == null) {
-            // no filtering in place
-            return null;
-        }
-        cachedAction = new RepositoryFilterAction(createSpecMatchers(includeSpecs), createSpecMatchers(excludeSpecs));
-        return cachedAction;
+//        if (cachedAction != null) {
+//            return cachedAction;
+//        }
+//
+        //return actionSupplier.get();
+        return d -> {
+            final Action<? super ArtifactResolutionDetails> action = actionSupplier.get();
+            if (action != null) {
+                action.execute(d);
+            }
+        };
     }
 
     @Nullable
