@@ -1,7 +1,5 @@
 package projects
 
-import Gradle_Check.configurations.FunctionalTestsPass
-import Gradle_Check.model.GradleBuildBucketProvider
 import configurations.FunctionalTest
 import configurations.PerformanceTestCoordinator
 import configurations.SanityCheck
@@ -16,7 +14,7 @@ import model.SpecificBuild
 import model.Stage
 import model.TestType
 
-class StageProject(model: CIBuildModel, gradleBuildBucketProvider: GradleBuildBucketProvider, stage: Stage, rootProjectUuid: String) : Project({
+class StageProject(model: CIBuildModel, stage: Stage, rootProjectUuid: String) : Project({
     this.uuid = "${model.projectPrefix}Stage_${stage.stageName.uuid}"
     this.id = AbsoluteId("${model.projectPrefix}Stage_${stage.stageName.id}")
     this.name = stage.stageName.stageName
@@ -50,50 +48,37 @@ class StageProject(model: CIBuildModel, gradleBuildBucketProvider: GradleBuildBu
         val (topLevelCoverage, allCoverage) = stage.functionalTests.partition { it.testType == TestType.soak }
         val topLevelFunctionalTests = topLevelCoverage
             .map { FunctionalTest(model, it.asConfigurationId(model), it.asName(), it.asName(), it, stage = stage) }
-        topLevelFunctionalTests.forEach(this::buildType)
 
-        val functionalTestProjects = allCoverage
+        val coverageFunctionalTests = allCoverage
             .map { testCoverage ->
-                val functionalTestProject = FunctionalTestProject(model, gradleBuildBucketProvider, testCoverage, stage)
+                val coverageFunctionalTest = FunctionalTest(
+                    model,
+                    testCoverage.asId(model),
+                    testCoverage.asName(),
+                    testCoverage.asName(),
+                    testCoverage,
+                    stage)
+
                 if (stage.functionalTestsDependOnSpecificBuilds) {
-                    specificBuildTypes.forEach { specificBuildType ->
-                        functionalTestProject.addDependencyForAllBuildTypes(specificBuildType)
-                    }
+                    specificBuildTypes.forEach(coverageFunctionalTest::dependsOn)
                 }
                 if (!(stage.functionalTestsDependOnSpecificBuilds && stage.specificBuilds.contains(SpecificBuild.SanityCheck)) && stage.dependsOnSanityCheck) {
-                    functionalTestProject.addDependencyForAllBuildTypes(AbsoluteId(SanityCheck.buildTypeId(model)))
+                    coverageFunctionalTest.dependsOn(AbsoluteId(SanityCheck.buildTypeId(model)))
                 }
-                functionalTestProject
+                coverageFunctionalTest
             }
 
-        functionalTestProjects.forEach { functionalTestProject ->
-            this@StageProject.subProject(functionalTestProject)
-            this@StageProject.buildType(FunctionalTestsPass(model, functionalTestProject))
-        }
-
-        val deferredTestsForThisStage = gradleBuildBucketProvider.createDeferredFunctionalTestsFor(stage)
-        if (deferredTestsForThisStage.isNotEmpty()) {
-            val deferredTestsProject = Project {
-                uuid = "${rootProjectUuid}_deferred_tests"
-                id = AbsoluteId(uuid)
-                name = "Test coverage deferred from Quick Feedback and Ready for Merge"
-                deferredTestsForThisStage.forEach(this::buildType)
-            }
-            subProject(deferredTestsProject)
-        }
-
-        functionalTests = topLevelFunctionalTests + functionalTestProjects.flatMap(FunctionalTestProject::functionalTests) + deferredTestsForThisStage
+        functionalTests = topLevelFunctionalTests + coverageFunctionalTests
+        functionalTests.forEach(this::buildType)
     }
 }
 
-private fun FunctionalTestProject.addDependencyForAllBuildTypes(dependency: IdOwner) {
-    functionalTests.forEach { functionalTestBuildType ->
-        functionalTestBuildType.dependencies {
-            dependency(dependency) {
-                snapshot {
-                    onDependencyFailure = FailureAction.CANCEL
-                    onDependencyCancel = FailureAction.CANCEL
-                }
+private fun FunctionalTest.dependsOn(dependency: IdOwner) {
+    dependencies {
+        dependency(dependency) {
+            snapshot {
+                onDependencyFailure = FailureAction.CANCEL
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
     }

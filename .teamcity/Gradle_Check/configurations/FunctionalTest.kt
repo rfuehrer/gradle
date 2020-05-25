@@ -15,7 +15,6 @@ class FunctionalTest(
     description: String,
     testCoverage: TestCoverage,
     stage: Stage,
-    subprojects: List<String> = listOf(),
     extraParameters: String = "",
     extraBuildSteps: BuildSteps.() -> Unit = {},
     preBuildSteps: BuildSteps.() -> Unit = {}
@@ -25,10 +24,6 @@ class FunctionalTest(
     this.description = description
     id = AbsoluteId(uuid)
     val testTaskName = "${testCoverage.testType.name}Test"
-    val testTasks = if (subprojects.isEmpty())
-        testTaskName
-    else
-        subprojects.joinToString(" ") { "$it:$testTaskName" }
     val quickTest = testCoverage.testType == TestType.quick
     val buildScanTags = listOf("FunctionalTest")
     val buildScanValues = mapOf(
@@ -45,7 +40,7 @@ class FunctionalTest(
         }
     }
 
-    applyTestDefaults(model, this, testTasks, notQuick = !quickTest, os = testCoverage.os,
+    applyTestDefaults(model, this, testTaskName, notQuick = !quickTest, os = testCoverage.os,
         extraParameters = (
             listOf(""""-PtestJavaHome=%${testCoverage.os}.${testCoverage.testJvmVersion}.${testCoverage.vendor}.64bit%"""") +
                 buildScanTags.map { buildScanTag(it) } +
@@ -70,14 +65,6 @@ class FunctionalTest(
             Os.windows -> {
                 param("env.ANDROID_HOME", """C:\Program Files\android\sdk""")
             }
-        }
-    }
-
-    if (testCoverage.testType == TestType.soak || testTasks.contains("plugins:")) {
-        failureConditions {
-            // JavaExecDebugIntegrationTest.debug session fails without debugger might cause JVM crash
-            // Some soak tests produce OOM exceptions
-            javaCrash = false
         }
     }
 })

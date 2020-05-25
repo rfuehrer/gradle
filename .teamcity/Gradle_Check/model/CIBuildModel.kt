@@ -1,6 +1,5 @@
 package model
 
-import Gradle_Check.model.GradleSubprojectProvider
 import common.BuildCache
 import common.JvmCategory
 import common.JvmVendor
@@ -9,7 +8,6 @@ import common.Os
 import common.builtInRemoteBuildCacheNode
 import configurations.BuildDistributions
 import configurations.CompileAll
-import configurations.FunctionalTest
 import configurations.Gradleception
 import configurations.SanityCheck
 import configurations.SmokeTests
@@ -111,42 +109,8 @@ data class CIBuildModel(
                 TestCoverage(29, TestType.vfsRetention, Os.windows, JvmCategory.MIN_VERSION.version, vendor = JvmCategory.MIN_VERSION.vendor),
                 TestCoverage(32, TestType.vfsRetention, Os.macos, JvmCategory.MAX_VERSION.version, vendor = JvmCategory.MAX_VERSION.vendor))
         )
-    ),
-    val subprojects: GradleSubprojectProvider
+    )
 )
-
-interface BuildTypeBucket {
-    fun createFunctionalTestsFor(model: CIBuildModel, stage: Stage, testCoverage: TestCoverage, bucketIndex: Int): FunctionalTest
-
-    fun getUuid(model: CIBuildModel, testCoverage: TestCoverage, bucketIndex: Int): String = testCoverage.asConfigurationId(model, "bucket${bucketIndex + 1}")
-
-    fun getName(testCoverage: TestCoverage): String = throw UnsupportedOperationException()
-
-    fun getDescription(testCoverage: TestCoverage): String = throw UnsupportedOperationException()
-}
-
-data class GradleSubproject(val name: String, val unitTests: Boolean = true, val functionalTests: Boolean = true, val crossVersionTests: Boolean = false, val containsSlowTests: Boolean = false) : BuildTypeBucket {
-    override fun createFunctionalTestsFor(model: CIBuildModel, stage: Stage, testCoverage: TestCoverage, bucketIndex: Int): FunctionalTest {
-        val uuid = if (containsSlowTests) testCoverage.asConfigurationId(model, name) else getUuid(model, testCoverage, bucketIndex)
-        return FunctionalTest(model,
-            uuid,
-            getName(testCoverage),
-            getDescription(testCoverage),
-
-            testCoverage,
-            stage,
-            listOf(name)
-        )
-    }
-
-    override fun getName(testCoverage: TestCoverage): String = "${testCoverage.asName()} ($name)"
-
-    override fun getDescription(testCoverage: TestCoverage) = "${testCoverage.asName()} for $name"
-
-    fun hasTestsOf(testType: TestType) = (unitTests && testType.unitTests) || (functionalTests && testType.functionalTests) || (crossVersionTests && testType.crossVersionTests)
-
-    fun asDirectoryName() = name.replace(Regex("([A-Z])")) { "-" + it.groups[1]!!.value.toLowerCase() }
-}
 
 interface StageName {
     val stageName: String
