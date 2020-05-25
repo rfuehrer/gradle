@@ -15,7 +15,6 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureAction
 import jetbrains.buildServer.configs.kotlin.v2019_2.ProjectFeatures
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.PullRequests
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.pullRequests
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import model.CIBuildModel
@@ -64,18 +63,6 @@ fun BuildFeatures.triggeredOnPullRequests() {
             }
             filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER
             filterTargetBranch = allBranchesFilter
-        }
-    }
-}
-
-fun BuildFeatures.publishBuildStatusToGithub() {
-    commitStatusPublisher {
-        vcsRootExtId = "DistributedTest_DistributedTest"
-        publisher = github {
-            githubUrl = "https://api.github.com"
-            authType = personalToken {
-                token = "credentialsJSON:5306bfc7-041e-46e8-8d61-1d49424e7b04"
-            }
         }
     }
 }
