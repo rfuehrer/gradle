@@ -49,9 +49,6 @@ val m2CleanScriptWindows = """
 """.trimIndent()
 
 fun BuildFeatures.publishBuildStatusToGithub(model: CIBuildModel) {
-    if (model.publishStatusToGitHub) {
-        publishBuildStatusToGithub()
-    }
 }
 
 fun BuildFeatures.triggeredOnPullRequests() {
