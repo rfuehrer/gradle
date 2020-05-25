@@ -25,8 +25,8 @@ enum class StageNames(override val stageName: String, override val description: 
 }
 
 data class CIBuildModel(
-    val projectPrefix: String = "Gradle_Check_",
-    val rootProjectName: String = "Check",
+    val projectPrefix: String = "DistributedGradle_Check_",
+    val rootProjectName: String = "DistributedCheck",
     val publishStatusToGitHub: Boolean = true,
     val parentBuildCache: BuildCache = builtInRemoteBuildCacheNode,
     val childBuildCache: BuildCache = builtInRemoteBuildCacheNode,
