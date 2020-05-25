@@ -1,6 +1,5 @@
 package DistributedTest.vcsRoots
 
-import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 object DistributedTest_DistributedTest : GitVcsRoot({

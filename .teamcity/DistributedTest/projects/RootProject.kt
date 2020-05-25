@@ -1,5 +1,6 @@
 package projects
 
+import DistributedTest.vcsRoots.DistributedTest_DistributedTest
 import configurations.StagePasses
 import jetbrains.buildServer.configs.kotlin.v2019_2.AbsoluteId
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
@@ -15,17 +16,20 @@ class RootProject(model: CIBuildModel) : Project({
     parentId = AbsoluteId("Gradle")
     name = model.rootProjectName
 
+    vcsRoot(DistributedTest_DistributedTest)
+
     features {
         versionedSettings {
-            id = "PROJECT_EXT_3"
+            id = "PROJECT_EXT_39"
             mode = VersionedSettings.Mode.ENABLED
-            buildSettingsMode = VersionedSettings.BuildSettingsMode.PREFER_SETTINGS_FROM_VCS
-            rootExtId = "Gradle_Branches_VersionedSettings"
-            showChanges = true
+            buildSettingsMode = VersionedSettings.BuildSettingsMode.USE_CURRENT_SETTINGS
+            rootExtId = "${DistributedTest_DistributedTest.id}"
+            showChanges = false
             settingsFormat = VersionedSettings.Format.KOTLIN
-            param("credentialsStorageType", "credentialsJSON")
+            storeSecureParamsOutsideOfVcs = true
         }
     }
+
 
     params {
         password("teamcity.user.bot-gradle.token", "credentialsJSON:6b612db7-378d-4c16-adeb-f74543ff29ae", display = ParameterDisplay.HIDDEN)
