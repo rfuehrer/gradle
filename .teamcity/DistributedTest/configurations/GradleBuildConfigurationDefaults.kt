@@ -57,7 +57,7 @@ fun BuildFeatures.publishBuildStatusToGithub(model: CIBuildModel) {
 
 fun BuildFeatures.triggeredOnPullRequests() {
     pullRequests {
-        vcsRootExtId = "Gradle_Branches_GradlePersonalBranches"
+        vcsRootExtId = "DistributedTest_DistributedTest"
         provider = github {
             authType = token {
                 token = "credentialsJSON:5306bfc7-041e-46e8-8d61-1d49424e7b04"
@@ -70,7 +70,7 @@ fun BuildFeatures.triggeredOnPullRequests() {
 
 fun BuildFeatures.publishBuildStatusToGithub() {
     commitStatusPublisher {
-        vcsRootExtId = "Gradle_Branches_GradlePersonalBranches"
+        vcsRootExtId = "DistributedTest_DistributedTest"
         publisher = github {
             githubUrl = "https://api.github.com"
             authType = personalToken {

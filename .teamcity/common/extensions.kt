@@ -58,7 +58,7 @@ fun VcsSettings.filterDefaultBranch() {
     branchFilter = allBranchesFilter
 }
 
-fun BuildType.applyDefaultSettings(os: Os = Os.linux, timeout: Int = 30, vcsRoot: String = "Gradle_Branches_GradlePersonalBranches") {
+fun BuildType.applyDefaultSettings(os: Os = Os.linux, timeout: Int = 30, vcsRoot: String = "DistributedTest_DistributedTest") {
     artifactRules = """
         build/report-* => .
         buildSrc/build/report-* => .
