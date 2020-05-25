@@ -13,7 +13,7 @@ import model.Stage
 class RootProject(model: CIBuildModel) : Project({
     uuid = model.projectPrefix.removeSuffix("_")
     id = AbsoluteId(uuid)
-    parentId = AbsoluteId("Gradle")
+    parentId("_Root")
     name = model.rootProjectName
 
     vcsRoot(DistributedTest_DistributedTest)
