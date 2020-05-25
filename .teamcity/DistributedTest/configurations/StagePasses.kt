@@ -1,7 +1,7 @@
 package configurations
 
-import Gradle_Check.configurations.masterReleaseBranchFilter
-import Gradle_Check.configurations.triggerExcludes
+import DistributedTest.configurations.masterReleaseBranchFilter
+import DistributedTest.configurations.triggerExcludes
 import common.Os
 import common.applyDefaultSettings
 import common.buildToolGradleParameters

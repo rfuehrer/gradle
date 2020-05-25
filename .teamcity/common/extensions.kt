@@ -16,7 +16,7 @@
 
 package common
 
-import Gradle_Check.configurations.allBranchesFilter
+import DistributedTest.configurations.allBranchesFilter
 import configurations.m2CleanScriptUnixLike
 import configurations.m2CleanScriptWindows
 import jetbrains.buildServer.configs.kotlin.v2019_2.AbsoluteId

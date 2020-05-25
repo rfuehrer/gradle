@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package Gradle_Check.configurations
+package DistributedTest.configurations
 
 val triggerExcludes = """
         -:.idea
